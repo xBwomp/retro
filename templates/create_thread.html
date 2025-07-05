@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Thread - RetroForum{% endblock %}
+
+{% block content %}
+<div class="create-thread-container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="retro-panel">
+                <div class="panel-header">
+                    <h2 class="retro-heading">
+                        <i class="fas fa-plus"></i> Start a New Discussion
+                    </h2>
+                </div>
+                
+                <div class="panel-body">
+                    <form id="create-thread-form">
+                        <div class="form-group">
+                            <label for="thread-title" class="form-label">
+                                <i class="fas fa-heading"></i> Thread Title:
+                            </label>
+                            <input type="text" id="thread-title" class="retro-input" 
+                                   placeholder="Enter an engaging title..." maxlength="200">
+                            <small class="form-help">Make it catchy and descriptive!</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="thread-category" class="form-label">
+                                <i class="fas fa-tag"></i> Category:
+                            </label>
+                            <select id="thread-category" class="retro-select">
+                                {% for cat_id, cat_name in categories.items() %}
+                                <option value="{{ cat_id }}">{{ cat_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-help">Choose the most appropriate category</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="thread-content" class="form-label">
+                                <i class="fas fa-edit"></i> Your Message:
+                            </label>
+                            <textarea id="thread-content" class="retro-textarea" rows="10"
+                                    placeholder="Share your thoughts, ask a question, or start a discussion..."></textarea>
+                            <small class="form-help">Express yourself! Be respectful and constructive.</small>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="retro-button large">
+                                <i class="fas fa-paper-plane"></i> Create Thread
+                            </button>
+                            <a href="{{ url_for('index') }}" class="retro-button secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Forum
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Posting Guidelines -->
+            <div class="retro-panel guidelines-panel">
+                <div class="panel-header">
+                    <h3 class="retro-heading">
+                        <i class="fas fa-info-circle"></i> Posting Guidelines
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="guidelines-list">
+                        <div class="guideline-item">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Be Respectful:</strong> Treat all members with courtesy and respect
+                        </div>
+                        <div class="guideline-item">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Stay On Topic:</strong> Keep discussions relevant to the chosen category
+                        </div>
+                        <div class="guideline-item">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Search First:</strong> Check if your topic has already been discussed
+                        </div>
+                        <div class="guideline-item">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Use Clear Titles:</strong> Help others understand what your thread is about
+                        </div>
+                        <div class="guideline-item">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>No Spam:</strong> Avoid duplicate posts and irrelevant content
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Retro decorations -->
+<div class="retro-decorations">
+    <div class="decoration-line"></div>
+    <div class="blink-text">
+        <span class="blink">★</span> Share your wisdom with the community! <span class="blink">★</span>
+    </div>
+    <div class="decoration-line"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createThreadForm = document.getElementById('create-thread-form');
+    
+    createThreadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!window.currentUser) {
+            alert('Please log in to create a thread.');
+            window.location.href = '/login';
+            return;
+        }
+        
+        const title = document.getElementById('thread-title').value.trim();
+        const category = document.getElementById('thread-category').value;
+        const content = document.getElementById('thread-content').value.trim();
+        
+        // Validation
+        if (!title) {
+            alert('Please enter a thread title.');
+            document.getElementById('thread-title').focus();
+            return;
+        }
+        
+        if (title.length < 5) {
+            alert('Thread title must be at least 5 characters long.');
+            document.getElementById('thread-title').focus();
+            return;
+        }
+        
+        if (!content) {
+            alert('Please enter some content for your thread.');
+            document.getElementById('thread-content').focus();
+            return;
+        }
+        
+        if (content.length < 10) {
+            alert('Thread content must be at least 10 characters long.');
+            document.getElementById('thread-content').focus();
+            return;
+        }
+        
+        // Prepare data
+        const threadData = {
+            title: title,
+            category: category,
+            content: content,
+            author_uid: window.currentUser.uid,
+            author_name: window.currentUser.displayName || 'Anonymous'
+        };
+        
+        // Disable form
+        const submitBtn = document.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        submitBtn.disabled = true;
+        
+        // Submit to API
+        fetch('/api/create_thread', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(threadData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to the new thread
+                window.location.href = `/thread/${data.thread_id}`;
+            } else {
+                alert('Error creating thread: ' + (data.error || 'Unknown error'));
+                // Re-enable form
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error creating thread. Please try again.');
+            // Re-enable form
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+    
+    // Character counter for title
+    const titleInput = document.getElementById('thread-title');
+    titleInput.addEventListener('input', function() {
+        const remaining = 200 - this.value.length;
+        let helpText = titleInput.parentNode.querySelector('.form-help');
+        if (remaining < 20) {
+            helpText.textContent = `${remaining} characters remaining`;
+            helpText.style.color = remaining < 10 ? '#ff6b6b' : '#ffa500';
+        } else {
+            helpText.textContent = 'Make it catchy and descriptive!';
+            helpText.style.color = '';
+        }
+    });
+});
+</script>
+{% endblock %}

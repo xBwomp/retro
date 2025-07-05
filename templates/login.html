@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Login - RetroForum{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="retro-panel login-panel">
+                <div class="panel-header">
+                    <h2 class="retro-heading">
+                        <i class="fas fa-sign-in-alt"></i> Welcome Back!
+                    </h2>
+                </div>
+                
+                <div class="panel-body">
+                    <div class="login-intro">
+                        <p>Join the RetroForum community and start participating in discussions!</p>
+                        <div class="retro-separator"></div>
+                    </div>
+                    
+                    <div class="auth-options">
+                        <button id="google-login-btn" class="retro-button large google-btn">
+                            <i class="fab fa-google"></i>
+                            Sign in with Google
+                        </button>
+                        
+                        <div class="auth-note">
+                            <p><small>
+                                <i class="fas fa-info-circle"></i>
+                                We use Google authentication for secure and easy access.
+                            </small></p>
+                        </div>
+                    </div>
+                    
+                    <div class="benefits-section">
+                        <h4 class="benefits-title">What you can do as a member:</h4>
+                        <ul class="benefits-list">
+                            <li><i class="fas fa-plus"></i> Create new discussion threads</li>
+                            <li><i class="fas fa-reply"></i> Reply to existing discussions</li>
+                            <li><i class="fas fa-thumbs-up"></i> Vote on posts and replies</li>
+                            <li><i class="fas fa-search"></i> Search through all discussions</li>
+                            <li><i class="fas fa-user"></i> Build your reputation in the community</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Retro decorations -->
+            <div class="retro-decorations">
+                <div class="decoration-box">
+                    <div class="blink">★</div>
+                    <span>EST. 2025</span>
+                    <div class="blink">★</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+    import { signInWithRedirect, GoogleAuthProvider, getRedirectResult } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+    
+    // Check for redirect result on page load
+    getRedirectResult(window.auth).then((result) => {
+        if (result) {
+            // User signed in successfully
+            window.location.href = '/';
+        }
+    }).catch((error) => {
+        console.error('Auth error:', error);
+    });
+    
+    // Google login button
+    document.getElementById('google-login-btn').addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        signInWithRedirect(window.auth, provider);
+    });
+</script>
+{% endblock %}

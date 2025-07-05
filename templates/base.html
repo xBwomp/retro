@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}RetroForum - A Nostalgic Discussion Board{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Retro CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid retro-container">
+        <!-- Header -->
+        <header class="retro-header">
+            <div class="row">
+                <div class="col-12">
+                    <table class="header-table">
+                        <tr>
+                            <td class="logo-cell">
+                                <h1 class="retro-logo">
+                                    <i class="fas fa-comments"></i>
+                                    RetroForum
+                                </h1>
+                                <div class="tagline">~ Where Nostalgia Meets Discussion ~</div>
+                            </td>
+                            <td class="nav-cell">
+                                <div class="retro-nav">
+                                    <a href="{{ url_for('index') }}" class="retro-button">
+                                        <i class="fas fa-home"></i> Home
+                                    </a>
+                                    <a href="{{ url_for('create_thread') }}" class="retro-button" id="new-thread-btn">
+                                        <i class="fas fa-plus"></i> New Thread
+                                    </a>
+                                    <div class="auth-section">
+                                        <span id="user-info" style="display: none;">
+                                            Welcome, <span id="user-name"></span>!
+                                            <button id="logout-btn" class="retro-button small">Logout</button>
+                                        </span>
+                                        <a href="{{ url_for('login') }}" id="login-btn" class="retro-button">
+                                            <i class="fas fa-sign-in-alt"></i> Login
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Bar -->
+        <nav class="retro-navbar">
+            <div class="row">
+                <div class="col-12">
+                    <div class="category-nav">
+                        <a href="{{ url_for('index') }}" class="category-link {% if request.endpoint == 'index' %}active{% endif %}">
+                            <i class="fas fa-list"></i> All Threads
+                        </a>
+                        {% for cat_id, cat_name in categories.items() %}
+                        <a href="{{ url_for('category', category_id=cat_id) }}" 
+                           class="category-link {% if request.endpoint == 'category' and request.view_args.category_id == cat_id %}active{% endif %}">
+                            {% if cat_id == 'tech' %}<i class="fas fa-microchip"></i>
+                            {% elif cat_id == 'gaming' %}<i class="fas fa-gamepad"></i>
+                            {% elif cat_id == 'music' %}<i class="fas fa-music"></i>
+                            {% elif cat_id == 'movies' %}<i class="fas fa-film"></i>
+                            {% elif cat_id == 'random' %}<i class="fas fa-random"></i>
+                            {% else %}<i class="fas fa-comments"></i>
+                            {% endif %}
+                            {{ cat_name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="row">
+                <div class="col-12">
+                    <form method="GET" action="{{ url_for('search') }}" class="search-form">
+                        <table class="search-table">
+                            <tr>
+                                <td>
+                                    <input type="text" name="q" placeholder="Search threads..." 
+                                           value="{{ search_query or '' }}" class="retro-input search-input">
+                                </td>
+                                <td>
+                                    <button type="submit" class="retro-button">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert retro-alert alert-{{ 'danger' if category == 'error' else 'info' }}">
+                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Main Content -->
+        <main class="retro-main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="retro-footer">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p>
+                        &copy; 2025 RetroForum | Powered by Flask & Firebase | 
+                        <i class="fas fa-heart" style="color: #ff6b6b;"></i> Made with nostalgia
+                    </p>
+                    <p class="footer-links">
+                        <span class="blink">★</span> Welcome to the past! <span class="blink">★</span>
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+        
+        window.firebaseConfig = {
+            apiKey: "{{ firebase_api_key }}",
+            authDomain: "{{ firebase_project_id }}.firebaseapp.com",
+            projectId: "{{ firebase_project_id }}",
+            storageBucket: "{{ firebase_project_id }}.firebasestorage.app",
+            appId: "{{ firebase_app_id }}"
+        };
+        
+        const app = initializeApp(window.firebaseConfig);
+        window.auth = getAuth(app);
+    </script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/firebase-auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/forum.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

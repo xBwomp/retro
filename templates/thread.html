@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}{{ thread.title }} - RetroForum{% endblock %}
+
+{% block content %}
+<div class="thread-container">
+    <!-- Thread Header -->
+    <div class="thread-header">
+        <div class="row">
+            <div class="col-12">
+                <div class="breadcrumb-nav">
+                    <a href="{{ url_for('index') }}" class="breadcrumb-link">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <span class="breadcrumb-separator">→</span>
+                    <a href="{{ url_for('category', category_id=thread.category) }}" class="breadcrumb-link">
+                        {{ thread.category_name }}
+                    </a>
+                    <span class="breadcrumb-separator">→</span>
+                    <span class="breadcrumb-current">{{ thread.title }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Original Thread Post -->
+    <div class="thread-post">
+        <table class="retro-table post-table">
+            <tr>
+                <td class="author-column">
+                    <div class="author-info">
+                        <div class="author-avatar">
+                            <i class="fas fa-user-circle fa-3x"></i>
+                        </div>
+                        <div class="author-name">{{ thread.author_name or 'Anonymous' }}</div>
+                        <div class="author-title">Thread Starter</div>
+                    </div>
+                </td>
+                <td class="content-column">
+                    <div class="post-header">
+                        <h1 class="thread-title">{{ thread.title }}</h1>
+                        <div class="post-meta">
+                            <i class="fas fa-clock"></i>
+                            {% if thread.created_at %}
+                                Posted on {{ thread.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            {% else %}
+                                Posted just now
+                            {% endif %}
+                            <span class="category-tag">
+                                <i class="fas fa-tag"></i>
+                                <a href="{{ url_for('category', category_id=thread.category) }}">
+                                    {{ thread.category_name }}
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        {{ thread.content | replace('\n', '<br>') | safe }}
+                    </div>
+                    <div class="post-actions">
+                        <div class="vote-section">
+                            <button class="vote-btn upvote-btn" 
+                                    data-item-id="{{ thread.id }}" 
+                                    data-item-type="thread" 
+                                    data-vote-type="upvote">
+                                <i class="fas fa-arrow-up"></i>
+                                <span class="vote-count">{{ thread.upvotes or 0 }}</span>
+                            </button>
+                            <button class="vote-btn downvote-btn" 
+                                    data-item-id="{{ thread.id }}" 
+                                    data-item-type="thread" 
+                                    data-vote-type="downvote">
+                                <i class="fas fa-arrow-down"></i>
+                                <span class="vote-count">{{ thread.downvotes or 0 }}</span>
+                            </button>
+                        </div>
+                        <div class="reply-action">
+                            <button id="show-reply-form" class="retro-button">
+                                <i class="fas fa-reply"></i> Reply to Thread
+                            </button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Reply Form -->
+    <div id="reply-form-container" class="reply-form-container" style="display: none;">
+        <div class="retro-panel">
+            <div class="panel-header">
+                <h3 class="retro-heading">
+                    <i class="fas fa-reply"></i> Post a Reply
+                </h3>
+            </div>
+            <div class="panel-body">
+                <form id="reply-form">
+                    <div class="form-group">
+                        <label for="reply-content" class="form-label">Your Reply:</label>
+                        <textarea id="reply-content" class="retro-textarea" rows="6" 
+                                placeholder="Share your thoughts..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="retro-button">
+                            <i class="fas fa-paper-plane"></i> Post Reply
+                        </button>
+                        <button type="button" id="cancel-reply" class="retro-button secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Replies Section -->
+    <div class="replies-section">
+        <div class="replies-header">
+            <h3 class="retro-heading">
+                <i class="fas fa-comments"></i> 
+                Replies ({{ replies | length }})
+            </h3>
+        </div>
+
+        {% if replies %}
+            <div class="replies-container">
+                {% for reply in replies %}
+                <div class="reply-post" id="reply-{{ reply.id }}">
+                    <table class="retro-table reply-table">
+                        <tr>
+                            <td class="author-column">
+                                <div class="author-info">
+                                    <div class="author-avatar">
+                                        <i class="fas fa-user-circle fa-2x"></i>
+                                    </div>
+                                    <div class="author-name">{{ reply.author_name or 'Anonymous' }}</div>
+                                    <div class="author-title">Member</div>
+                                </div>
+                            </td>
+                            <td class="content-column">
+                                <div class="reply-header">
+                                    <div class="reply-meta">
+                                        <i class="fas fa-clock"></i>
+                                        {% if reply.created_at %}
+                                            {{ reply.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% else %}
+                                            Just now
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="reply-content">
+                                    {{ reply.content | replace('\n', '<br>') | safe }}
+                                </div>
+                                <div class="reply-actions">
+                                    <div class="vote-section">
+                                        <button class="vote-btn upvote-btn small" 
+                                                data-item-id="{{ reply.id }}" 
+                                                data-item-type="reply" 
+                                                data-vote-type="upvote">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span class="vote-count">{{ reply.upvotes or 0 }}</span>
+                                        </button>
+                                        <button class="vote-btn downvote-btn small" 
+                                                data-item-id="{{ reply.id }}" 
+                                                data-item-type="reply" 
+                                                data-vote-type="downvote">
+                                            <i class="fas fa-arrow-down"></i>
+                                            <span class="vote-count">{{ reply.downvotes or 0 }}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-replies">
+                <div class="empty-message">
+                    <i class="fas fa-comment-slash fa-3x"></i>
+                    <h4>No replies yet!</h4>
+                    <p>Be the first to share your thoughts on this thread.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Retro decorations -->
+<div class="retro-decorations">
+    <div class="decoration-line"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/voting.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const showReplyBtn = document.getElementById('show-reply-form');
+    const replyFormContainer = document.getElementById('reply-form-container');
+    const replyForm = document.getElementById('reply-form');
+    const cancelReplyBtn = document.getElementById('cancel-reply');
+    
+    // Show reply form
+    showReplyBtn.addEventListener('click', function() {
+        if (!window.currentUser) {
+            alert('Please log in to reply to threads.');
+            window.location.href = '/login';
+            return;
+        }
+        replyFormContainer.style.display = 'block';
+        document.getElementById('reply-content').focus();
+    });
+    
+    // Cancel reply
+    cancelReplyBtn.addEventListener('click', function() {
+        replyFormContainer.style.display = 'none';
+        document.getElementById('reply-content').value = '';
+    });
+    
+    // Submit reply
+    replyForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!window.currentUser) {
+            alert('Please log in to reply to threads.');
+            window.location.href = '/login';
+            return;
+        }
+        
+        const content = document.getElementById('reply-content').value.trim();
+        if (!content) {
+            alert('Please enter a reply.');
+            return;
+        }
+        
+        const replyData = {
+            thread_id: '{{ thread.id }}',
+            content: content,
+            author_uid: window.currentUser.uid,
+            author_name: window.currentUser.displayName || 'Anonymous'
+        };
+        
+        fetch('/api/create_reply', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(replyData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload page to show new reply
+                window.location.reload();
+            } else {
+                alert('Error posting reply: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error posting reply. Please try again.');
+        });
+    });
+});
+</script>
+{% endblock %}

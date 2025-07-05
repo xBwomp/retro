@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_name }} - RetroForum{% endblock %}
+
+{% block content %}
+<div class="category-content">
+    <div class="category-header">
+        <div class="row">
+            <div class="col-12">
+                <div class="breadcrumb-nav">
+                    <a href="{{ url_for('index') }}" class="breadcrumb-link">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <span class="breadcrumb-separator">→</span>
+                    <span class="breadcrumb-current">{{ category_name }}</span>
+                </div>
+                
+                <h2 class="retro-heading category-title">
+                    {% if category_id == 'tech' %}<i class="fas fa-microchip"></i>
+                    {% elif category_id == 'gaming' %}<i class="fas fa-gamepad"></i>
+                    {% elif category_id == 'music' %}<i class="fas fa-music"></i>
+                    {% elif category_id == 'movies' %}<i class="fas fa-film"></i>
+                    {% elif category_id == 'random' %}<i class="fas fa-random"></i>
+                    {% else %}<i class="fas fa-comments"></i>
+                    {% endif %}
+                    {{ category_name }}
+                </h2>
+                
+                <div class="category-description">
+                    {% if category_id == 'general' %}
+                    <p>General discussions and conversations about anything and everything!</p>
+                    {% elif category_id == 'tech' %}
+                    <p>Technology discussions, programming, gadgets, and digital innovations.</p>
+                    {% elif category_id == 'gaming' %}
+                    <p>Video games, gaming culture, reviews, and gaming community discussions.</p>
+                    {% elif category_id == 'music' %}
+                    <p>Music discussions, album reviews, artist talk, and musical discoveries.</p>
+                    {% elif category_id == 'movies' %}
+                    <p>Movie reviews, TV shows, entertainment industry, and cinema discussions.</p>
+                    {% elif category_id == 'random' %}
+                    <p>Random thoughts, shower thoughts, and anything that doesn't fit elsewhere!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="category-actions">
+        <div class="row">
+            <div class="col-12">
+                <div class="action-buttons">
+                    <a href="{{ url_for('create_thread') }}?category={{ category_id }}" class="retro-button">
+                        <i class="fas fa-plus"></i> New Thread in {{ category_name }}
+                    </a>
+                    <a href="{{ url_for('index') }}" class="retro-button secondary">
+                        <i class="fas fa-list"></i> View All Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if threads %}
+    <div class="threads-container">
+        <div class="threads-stats">
+            <p class="stats-text">
+                <i class="fas fa-chart-bar"></i>
+                Showing {{ threads | length }} thread{{ 's' if threads | length != 1 else '' }} in {{ category_name }}
+            </p>
+        </div>
+        
+        <table class="retro-table threads-table">
+            <thead>
+                <tr class="table-header">
+                    <th width="50%">Thread Title</th>
+                    <th width="20%">Author</th>
+                    <th width="15%">Replies</th>
+                    <th width="15%">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for thread in threads %}
+                <tr class="thread-row">
+                    <td class="thread-title-cell">
+                        <div class="thread-info">
+                            <h3 class="thread-title">
+                                <a href="{{ url_for('thread', thread_id=thread.id) }}" class="thread-link">
+                                    {{ thread.title }}
+                                </a>
+                            </h3>
+                            <div class="thread-meta">
+                                <small>
+                                    <i class="fas fa-clock"></i>
+                                    {% if thread.created_at %}
+                                        {{ thread.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% else %}
+                                        Just now
+                                    {% endif %}
+                                    {% if thread.updated_at and thread.updated_at != thread.created_at %}
+                                        <span class="update-indicator">
+                                            <i class="fas fa-edit"></i>
+                                            Updated {{ thread.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                        </span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% if thread.content %}
+                            <div class="thread-preview">
+                                {{ (thread.content[:150] + '...') if thread.content | length > 150 else thread.content }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="author-cell">
+                        <div class="author-info">
+                            <i class="fas fa-user"></i>
+                            {{ thread.author_name or 'Anonymous' }}
+                        </div>
+                    </td>
+                    <td class="replies-cell">
+                        <div class="stat-box">
+                            <i class="fas fa-comments"></i>
+                            {{ thread.reply_count or 0 }}
+                        </div>
+                    </td>
+                    <td class="score-cell">
+                        <div class="vote-display">
+                            <div class="vote-score">
+                                <i class="fas fa-arrow-up text-success"></i>
+                                {{ thread.upvotes or 0 }}
+                                <br>
+                                <i class="fas fa-arrow-down text-danger"></i>
+                                {{ thread.downvotes or 0 }}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-message">
+            <i class="fas fa-folder-open fa-4x"></i>
+            <h3>No threads in {{ category_name }} yet!</h3>
+            <p>Be the first to start a discussion in this category.</p>
+            <a href="{{ url_for('create_thread') }}?category={{ category_id }}" class="retro-button large">
+                <i class="fas fa-plus"></i> Create First Thread
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Category Statistics -->
+    <div class="category-stats">
+        <div class="retro-panel stats-panel">
+            <div class="panel-header">
+                <h4 class="retro-heading">
+                    <i class="fas fa-chart-pie"></i> Category Statistics
+                </h4>
+            </div>
+            <div class="panel-body">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <i class="fas fa-comments"></i>
+                        <div class="stat-value">{{ threads | length }}</div>
+                        <div class="stat-label">Threads</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-reply"></i>
+                        <div class="stat-value">
+                            {% set total_replies = threads | sum(attribute='reply_count') %}
+                            {{ total_replies or 0 }}
+                        </div>
+                        <div class="stat-label">Total Replies</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-thumbs-up"></i>
+                        <div class="stat-value">
+                            {% set total_upvotes = threads | sum(attribute='upvotes') %}
+                            {{ total_upvotes or 0 }}
+                        </div>
+                        <div class="stat-label">Upvotes</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-fire"></i>
+                        <div class="stat-value">
+                            {% if threads %}
+                                {% set activity_score = (threads | sum(attribute='upvotes') or 0) + (threads | sum(attribute='reply_count') or 0) %}
+                                {{ activity_score }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </div>
+                        <div class="stat-label">Activity Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Retro decorations -->
+<div class="retro-decorations">
+    <div class="decoration-line"></div>
+    <div class="blink-text">
+        <span class="blink">★</span> Explore {{ category_name }} discussions! <span class="blink">★</span>
+    </div>
+    <div class="decoration-line"></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/voting.js') }}"></script>
+<script>
+// Pre-select category if coming from create thread link
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    if (category && window.location.pathname.includes('/create_thread')) {
+        const categorySelect = document.getElementById('thread-category');
+        if (categorySelect) {
+            categorySelect.value = category;
+        }
+    }
+});
+</script>
+{% endblock %}

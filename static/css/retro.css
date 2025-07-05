@@ -1,0 +1,742 @@
+/* RetroForum - '90s Nostalgic CSS */
+
+/* Import retro fonts */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Press+Start+2P&display=swap');
+
+/* CSS Variables for retro colors */
+:root {
+    --retro-bg: #c0c0c0;
+    --retro-dark-bg: #808080;
+    --retro-light-bg: #e0e0e0;
+    --retro-border: #000080;
+    --retro-accent: #ff00ff;
+    --retro-highlight: #ffff00;
+    --retro-text: #000000;
+    --retro-link: #0000ff;
+    --retro-visited: #800080;
+    --retro-button-bg: #c0c0c0;
+    --retro-button-shadow: #808080;
+    --retro-error: #ff0000;
+    --retro-success: #008000;
+    --retro-warning: #ffa500;
+}
+
+/* Global Styles */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier Prime', monospace;
+    background: linear-gradient(45deg, var(--retro-bg) 25%, var(--retro-light-bg) 25%, var(--retro-light-bg) 50%, var(--retro-bg) 50%, var(--retro-bg) 75%, var(--retro-light-bg) 75%);
+    background-size: 4px 4px;
+    color: var(--retro-text);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+/* Container */
+.retro-container {
+    background: var(--retro-bg);
+    border: 2px solid var(--retro-border);
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* Header Styles */
+.retro-header {
+    background: linear-gradient(to bottom, var(--retro-light-bg), var(--retro-bg));
+    border-bottom: 2px solid var(--retro-border);
+    padding: 10px;
+}
+
+.header-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.logo-cell {
+    width: 60%;
+    vertical-align: middle;
+}
+
+.nav-cell {
+    width: 40%;
+    text-align: right;
+    vertical-align: middle;
+}
+
+.retro-logo {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px;
+    color: var(--retro-accent);
+    text-shadow: 2px 2px 0px var(--retro-border);
+    margin: 0;
+    padding: 0;
+}
+
+.tagline {
+    font-style: italic;
+    color: var(--retro-border);
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Navigation */
+.retro-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.retro-navbar {
+    background: var(--retro-dark-bg);
+    border-bottom: 2px solid var(--retro-border);
+    padding: 5px 10px;
+}
+
+.category-nav {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.category-link {
+    display: inline-block;
+    padding: 5px 10px;
+    background: var(--retro-button-bg);
+    border: 2px outset var(--retro-button-bg);
+    color: var(--retro-text);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.1s;
+}
+
+.category-link:hover {
+    background: var(--retro-light-bg);
+    color: var(--retro-text);
+    text-decoration: none;
+}
+
+.category-link.active {
+    border: 2px inset var(--retro-button-bg);
+    background: var(--retro-dark-bg);
+    color: var(--retro-highlight);
+}
+
+/* Buttons */
+.retro-button {
+    display: inline-block;
+    padding: 5px 12px;
+    background: var(--retro-button-bg);
+    border: 2px outset var(--retro-button-bg);
+    color: var(--retro-text);
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.retro-button:hover {
+    background: var(--retro-light-bg);
+    color: var(--retro-text);
+    text-decoration: none;
+}
+
+.retro-button:active {
+    border: 2px inset var(--retro-button-bg);
+}
+
+.retro-button.large {
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.retro-button.small {
+    padding: 3px 8px;
+    font-size: 10px;
+}
+
+.retro-button.secondary {
+    background: var(--retro-dark-bg);
+    border-color: var(--retro-dark-bg);
+    color: var(--retro-light-bg);
+}
+
+.retro-button:disabled {
+    background: var(--retro-dark-bg);
+    color: var(--retro-button-shadow);
+    cursor: not-allowed;
+}
+
+/* Search Section */
+.search-section {
+    background: var(--retro-light-bg);
+    border-bottom: 1px solid var(--retro-border);
+    padding: 10px;
+}
+
+.search-table {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+.search-input {
+    width: 100%;
+}
+
+/* Tables */
+.retro-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid var(--retro-border);
+    background: var(--retro-bg);
+    margin: 10px 0;
+}
+
+.retro-table th,
+.retro-table td {
+    border: 1px solid var(--retro-border);
+    padding: 8px;
+    text-align: left;
+}
+
+.retro-table th {
+    background: var(--retro-dark-bg);
+    color: var(--retro-light-bg);
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.retro-table tbody tr:nth-child(even) {
+    background: var(--retro-light-bg);
+}
+
+.retro-table tbody tr:hover {
+    background: var(--retro-highlight);
+}
+
+/* Form Elements */
+.retro-input,
+.retro-textarea,
+.retro-select {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 5px;
+    border: 2px inset var(--retro-button-bg);
+    background: white;
+    color: var(--retro-text);
+    width: 100%;
+}
+
+.retro-input:focus,
+.retro-textarea:focus,
+.retro-select:focus {
+    outline: 2px solid var(--retro-accent);
+    outline-offset: 1px;
+}
+
+/* Panels */
+.retro-panel {
+    border: 2px solid var(--retro-border);
+    background: var(--retro-bg);
+    margin: 10px 0;
+}
+
+.panel-header {
+    background: var(--retro-dark-bg);
+    color: var(--retro-light-bg);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--retro-border);
+}
+
+.panel-body {
+    padding: 15px;
+}
+
+/* Headings */
+.retro-heading {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    color: var(--retro-border);
+    margin: 0 0 10px 0;
+    text-shadow: 1px 1px 0px var(--retro-light-bg);
+}
+
+/* Links */
+a {
+    color: var(--retro-link);
+    text-decoration: underline;
+}
+
+a:visited {
+    color: var(--retro-visited);
+}
+
+a:hover {
+    color: var(--retro-accent);
+}
+
+/* Thread/Post Styles */
+.thread-row {
+    cursor: pointer;
+}
+
+.thread-title {
+    font-size: 14px;
+    margin: 0;
+    font-weight: bold;
+}
+
+.thread-link {
+    color: var(--retro-text);
+    text-decoration: none;
+}
+
+.thread-link:hover {
+    color: var(--retro-accent);
+    text-decoration: underline;
+}
+
+.thread-meta {
+    font-size: 10px;
+    color: var(--retro-button-shadow);
+    margin-top: 3px;
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--retro-accent);
+    color: white;
+    font-size: 10px;
+    border-radius: 2px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.author-info {
+    text-align: center;
+    font-size: 11px;
+}
+
+.stat-box {
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Voting */
+.vote-display {
+    text-align: center;
+}
+
+.vote-score {
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.vote-btn {
+    background: var(--retro-button-bg);
+    border: 1px solid var(--retro-border);
+    padding: 2px 5px;
+    margin: 1px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.vote-btn:hover {
+    background: var(--retro-light-bg);
+}
+
+.vote-btn.upvote-btn {
+    color: var(--retro-success);
+}
+
+.vote-btn.downvote-btn {
+    color: var(--retro-error);
+}
+
+/* Thread Detail Styles */
+.author-column {
+    width: 150px;
+    background: var(--retro-light-bg);
+    border-right: 2px solid var(--retro-border);
+    vertical-align: top;
+    padding: 10px;
+    text-align: center;
+}
+
+.content-column {
+    vertical-align: top;
+    padding: 10px;
+}
+
+.author-avatar {
+    color: var(--retro-border);
+    margin-bottom: 5px;
+}
+
+.author-name {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.author-title {
+    font-size: 10px;
+    color: var(--retro-button-shadow);
+}
+
+.post-header {
+    border-bottom: 1px solid var(--retro-border);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.thread-title {
+    font-size: 18px;
+    color: var(--retro-border);
+    margin: 0 0 5px 0;
+}
+
+.post-meta {
+    font-size: 11px;
+    color: var(--retro-button-shadow);
+}
+
+.post-content,
+.reply-content {
+    line-height: 1.5;
+    font-size: 13px;
+    margin: 10px 0;
+}
+
+.post-actions,
+.reply-actions {
+    border-top: 1px solid var(--retro-border);
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.form-help {
+    display: block;
+    font-size: 10px;
+    color: var(--retro-button-shadow);
+    margin-top: 3px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Empty States */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-message {
+    color: var(--retro-button-shadow);
+}
+
+.empty-message i {
+    color: var(--retro-dark-bg);
+    margin-bottom: 10px;
+}
+
+/* Alerts */
+.retro-alert {
+    border: 2px solid var(--retro-border);
+    padding: 10px;
+    margin: 10px 0;
+    background: var(--retro-light-bg);
+}
+
+.alert-danger {
+    background: #ffcccc;
+    border-color: var(--retro-error);
+    color: var(--retro-error);
+}
+
+.alert-info {
+    background: #ccffff;
+    border-color: var(--retro-link);
+    color: var(--retro-link);
+}
+
+/* Breadcrumbs */
+.breadcrumb-nav {
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.breadcrumb-link {
+    color: var(--retro-link);
+    text-decoration: none;
+}
+
+.breadcrumb-separator {
+    margin: 0 5px;
+    color: var(--retro-button-shadow);
+}
+
+.breadcrumb-current {
+    color: var(--retro-text);
+    font-weight: bold;
+}
+
+/* Decorations */
+.retro-decorations {
+    margin: 20px 0;
+}
+
+.decoration-line {
+    height: 2px;
+    background: repeating-linear-gradient(
+        to right,
+        var(--retro-border) 0px,
+        var(--retro-border) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    margin: 5px 0;
+}
+
+.blink-text {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.blink {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* Animations */
+.decoration-box {
+    text-align: center;
+    padding: 10px;
+    border: 1px dashed var(--retro-border);
+    background: var(--retro-light-bg);
+    margin: 10px 0;
+}
+
+/* Footer */
+.retro-footer {
+    background: var(--retro-dark-bg);
+    color: var(--retro-light-bg);
+    padding: 15px;
+    border-top: 2px solid var(--retro-border);
+    margin-top: 20px;
+    font-size: 11px;
+}
+
+.footer-links {
+    margin-top: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .retro-logo {
+        font-size: 18px;
+    }
+    
+    .retro-nav {
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .header-table td {
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .category-nav {
+        justify-content: center;
+    }
+    
+    .author-column {
+        width: 120px;
+        padding: 5px;
+    }
+    
+    .thread-title {
+        font-size: 16px;
+    }
+    
+    .retro-table th,
+    .retro-table td {
+        padding: 5px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .retro-container {
+        padding: 5px;
+    }
+    
+    .retro-logo {
+        font-size: 14px;
+    }
+    
+    .category-nav {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .category-link {
+        text-align: center;
+        margin: 2px 0;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .retro-button {
+        text-align: center;
+    }
+}
+
+/* Special Effects */
+marquee {
+    background: var(--retro-dark-bg);
+    color: var(--retro-highlight);
+    padding: 5px;
+    border: 1px solid var(--retro-border);
+}
+
+/* Login Page Specific */
+.login-panel {
+    max-width: 500px;
+    margin: 20px auto;
+}
+
+.auth-options {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.google-btn {
+    background: #4285f4;
+    color: white;
+    border-color: #4285f4;
+}
+
+.google-btn:hover {
+    background: #3367d6;
+    color: white;
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+}
+
+.benefits-list li {
+    padding: 5px 0;
+    border-bottom: 1px dotted var(--retro-border);
+}
+
+.benefits-list li:last-child {
+    border-bottom: none;
+}
+
+/* Thread Creation */
+.guidelines-panel {
+    margin-top: 20px;
+}
+
+.guideline-item {
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--retro-border);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.guideline-item:last-child {
+    border-bottom: none;
+}
+
+.guideline-item i {
+    color: var(--retro-success);
+    margin-top: 2px;
+}
+
+/* Category Statistics */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 10px;
+    border: 1px solid var(--retro-border);
+    background: var(--retro-light-bg);
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--retro-accent);
+    font-family: 'Press Start 2P', cursive;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--retro-button-shadow);
+    margin-top: 5px;
+}
+
+/* Retro scrollbar */
+::-webkit-scrollbar {
+    width: 16px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--retro-bg);
+    border: 1px solid var(--retro-border);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--retro-dark-bg);
+    border: 1px solid var(--retro-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--retro-button-shadow);
+}
