@@ -1,5 +1,14 @@
-# Import will be handled by app.py after db initialization
+import os
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+db = SQLAlchemy(model_class=Base)
 
 
 class Thread(db.Model):
@@ -18,8 +27,6 @@ class Thread(db.Model):
     
     # Relationship to replies
     replies = db.relationship('Reply', backref='thread', lazy=True, cascade='all, delete-orphan')
-    votes = db.relationship('Vote', backref='thread', lazy=True, cascade='all, delete-orphan',
-                           primaryjoin="and_(Thread.id==Vote.item_id, Vote.item_type=='thread')")
 
     def __repr__(self):
         return f'<Thread {self.title}>'
@@ -51,9 +58,7 @@ class Reply(db.Model):
     upvotes = db.Column(db.Integer, default=0)
     downvotes = db.Column(db.Integer, default=0)
     
-    # Relationship to votes
-    votes = db.relationship('Vote', backref='reply', lazy=True, cascade='all, delete-orphan',
-                           primaryjoin="and_(Reply.id==Vote.item_id, Vote.item_type=='reply')")
+
 
     def __repr__(self):
         return f'<Reply {self.id}>'

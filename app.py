@@ -1,19 +1,29 @@
 import os
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
-from firebase_config import initialize_firebase, get_firestore_client
+from database import db, Thread, Reply, Vote
 from datetime import datetime
-import uuid
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
+# Create the app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 
-# Initialize Firebase
-initialize_firebase()
-db = get_firestore_client()
+# Configure the database
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+
+# Initialize the app with the extension
+db.init_app(app)
+
+with app.app_context():
+    # Create tables
+    db.create_all()
 
 # Categories for the forum
 CATEGORIES = {
@@ -30,17 +40,16 @@ def index():
     """Main forum page showing recent threads"""
     try:
         # Get recent threads from all categories
-        threads_ref = db.collection('threads').order_by('created_at', direction='DESCENDING').limit(20)
-        threads = []
+        threads = Thread.query.order_by(Thread.created_at.desc()).limit(20).all()
+        thread_list = []
         
-        for doc in threads_ref.stream():
-            thread_data = doc.to_dict()
-            thread_data['id'] = doc.id
-            thread_data['category_name'] = CATEGORIES.get(thread_data.get('category', 'general'), 'General')
-            threads.append(thread_data)
+        for thread in threads:
+            thread_data = thread.to_dict()
+            thread_data['category_name'] = CATEGORIES.get(thread.category, 'General')
+            thread_list.append(thread_data)
         
         return render_template('index.html', 
-                             threads=threads, 
+                             threads=thread_list, 
                              categories=CATEGORIES,
                              firebase_api_key=os.environ.get("FIREBASE_API_KEY", ""),
                              firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID", ""),
@@ -71,17 +80,16 @@ def category(category_id):
         return redirect(url_for('index'))
     
     try:
-        threads_ref = db.collection('threads').where('category', '==', category_id).order_by('created_at', direction='DESCENDING')
-        threads = []
+        threads = Thread.query.filter_by(category=category_id).order_by(Thread.created_at.desc()).all()
+        thread_list = []
         
-        for doc in threads_ref.stream():
-            thread_data = doc.to_dict()
-            thread_data['id'] = doc.id
+        for thread in threads:
+            thread_data = thread.to_dict()
             thread_data['category_name'] = CATEGORIES.get(category_id, 'General')
-            threads.append(thread_data)
+            thread_list.append(thread_data)
         
         return render_template('category.html', 
-                             threads=threads, 
+                             threads=thread_list, 
                              category_id=category_id,
                              category_name=CATEGORIES[category_id],
                              categories=CATEGORIES,
@@ -99,34 +107,22 @@ def category(category_id):
                              firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID", ""),
                              firebase_app_id=os.environ.get("FIREBASE_APP_ID", ""))
 
-@app.route('/thread/<thread_id>')
+@app.route('/thread/<int:thread_id>')
 def thread(thread_id):
     """Show a specific thread with replies"""
     try:
         # Get thread
-        thread_ref = db.collection('threads').document(thread_id)
-        thread_doc = thread_ref.get()
-        
-        if not thread_doc.exists:
-            flash('Thread not found!', 'error')
-            return redirect(url_for('index'))
-        
-        thread_data = thread_doc.to_dict()
-        thread_data['id'] = thread_id
-        thread_data['category_name'] = CATEGORIES.get(thread_data.get('category', 'general'), 'General')
+        thread = Thread.query.get_or_404(thread_id)
+        thread_data = thread.to_dict()
+        thread_data['category_name'] = CATEGORIES.get(thread.category, 'General')
         
         # Get replies
-        replies_ref = db.collection('replies').where('thread_id', '==', thread_id).order_by('created_at')
-        replies = []
-        
-        for doc in replies_ref.stream():
-            reply_data = doc.to_dict()
-            reply_data['id'] = doc.id
-            replies.append(reply_data)
+        replies = Reply.query.filter_by(thread_id=thread_id).order_by(Reply.created_at).all()
+        reply_list = [reply.to_dict() for reply in replies]
         
         return render_template('thread.html', 
                              thread=thread_data, 
-                             replies=replies,
+                             replies=reply_list,
                              categories=CATEGORIES,
                              firebase_api_key=os.environ.get("FIREBASE_API_KEY", ""),
                              firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID", ""),
@@ -155,26 +151,22 @@ def api_create_thread():
         if not all(key in data for key in ['title', 'content', 'category', 'author_uid', 'author_name']):
             return jsonify({'error': 'Missing required fields'}), 400
         
-        # Create thread document
-        thread_data = {
-            'title': data['title'],
-            'content': data['content'],
-            'category': data['category'],
-            'author_uid': data['author_uid'],
-            'author_name': data['author_name'],
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow(),
-            'upvotes': 0,
-            'downvotes': 0,
-            'reply_count': 0
-        }
+        # Create thread
+        thread = Thread(
+            title=data['title'],
+            content=data['content'],
+            category=data['category'],
+            author_uid=data['author_uid'],
+            author_name=data['author_name']
+        )
         
-        doc_ref = db.collection('threads').document()
-        doc_ref.set(thread_data)
+        db.session.add(thread)
+        db.session.commit()
         
-        return jsonify({'success': True, 'thread_id': doc_ref.id})
+        return jsonify({'success': True, 'thread_id': thread.id})
     except Exception as e:
         logging.error(f"Error creating thread: {e}")
+        db.session.rollback()
         return jsonify({'error': 'Failed to create thread'}), 500
 
 @app.route('/api/create_reply', methods=['POST'])
@@ -187,30 +179,28 @@ def api_create_reply():
         if not all(key in data for key in ['thread_id', 'content', 'author_uid', 'author_name']):
             return jsonify({'error': 'Missing required fields'}), 400
         
-        # Create reply document
-        reply_data = {
-            'thread_id': data['thread_id'],
-            'content': data['content'],
-            'author_uid': data['author_uid'],
-            'author_name': data['author_name'],
-            'created_at': datetime.utcnow(),
-            'upvotes': 0,
-            'downvotes': 0
-        }
+        # Create reply
+        reply = Reply(
+            thread_id=int(data['thread_id']),
+            content=data['content'],
+            author_uid=data['author_uid'],
+            author_name=data['author_name']
+        )
         
-        doc_ref = db.collection('replies').document()
-        doc_ref.set(reply_data)
+        db.session.add(reply)
         
         # Update thread reply count
-        thread_ref = db.collection('threads').document(data['thread_id'])
-        thread_ref.update({
-            'reply_count': db.field_increment(1),
-            'updated_at': datetime.utcnow()
-        })
+        thread = Thread.query.get(int(data['thread_id']))
+        if thread:
+            thread.reply_count += 1
+            thread.updated_at = datetime.utcnow()
         
-        return jsonify({'success': True, 'reply_id': doc_ref.id})
+        db.session.commit()
+        
+        return jsonify({'success': True, 'reply_id': reply.id})
     except Exception as e:
         logging.error(f"Error creating reply: {e}")
+        db.session.rollback()
         return jsonify({'error': 'Failed to create reply'}), 500
 
 @app.route('/api/vote', methods=['POST'])
@@ -223,51 +213,63 @@ def api_vote():
         if not all(key in data for key in ['item_id', 'item_type', 'vote_type', 'user_uid']):
             return jsonify({'error': 'Missing required fields'}), 400
         
-        item_id = data['item_id']
+        item_id = int(data['item_id'])
         item_type = data['item_type']  # 'thread' or 'reply'
         vote_type = data['vote_type']  # 'upvote' or 'downvote'
         user_uid = data['user_uid']
         
         # Check if user already voted
-        vote_ref = db.collection('votes').where('item_id', '==', item_id).where('user_uid', '==', user_uid)
-        existing_votes = list(vote_ref.stream())
+        existing_vote = Vote.query.filter_by(
+            item_id=item_id,
+            item_type=item_type,
+            user_uid=user_uid
+        ).first()
         
         # Remove existing vote if any
-        for vote_doc in existing_votes:
-            old_vote = vote_doc.to_dict()
-            vote_doc.reference.delete()
+        if existing_vote:
+            old_vote_type = existing_vote.vote_type
+            db.session.delete(existing_vote)
             
             # Decrement old vote count
-            collection = 'threads' if item_type == 'thread' else 'replies'
-            item_ref = db.collection(collection).document(item_id)
-            if old_vote['vote_type'] == 'upvote':
-                item_ref.update({'upvotes': db.field_increment(-1)})
+            if item_type == 'thread':
+                item = Thread.query.get(item_id)
             else:
-                item_ref.update({'downvotes': db.field_increment(-1)})
+                item = Reply.query.get(item_id)
+            
+            if item:
+                if old_vote_type == 'upvote':
+                    item.upvotes = max(0, item.upvotes - 1)
+                else:
+                    item.downvotes = max(0, item.downvotes - 1)
         
         # Add new vote if different from existing or if no existing vote
-        if not existing_votes or existing_votes[0].to_dict()['vote_type'] != vote_type:
+        if not existing_vote or existing_vote.vote_type != vote_type:
             # Create new vote
-            vote_data = {
-                'item_id': item_id,
-                'item_type': item_type,
-                'vote_type': vote_type,
-                'user_uid': user_uid,
-                'created_at': datetime.utcnow()
-            }
-            db.collection('votes').document().set(vote_data)
+            new_vote = Vote(
+                item_id=item_id,
+                item_type=item_type,
+                vote_type=vote_type,
+                user_uid=user_uid
+            )
+            db.session.add(new_vote)
             
             # Increment vote count
-            collection = 'threads' if item_type == 'thread' else 'replies'
-            item_ref = db.collection(collection).document(item_id)
-            if vote_type == 'upvote':
-                item_ref.update({'upvotes': db.field_increment(1)})
+            if item_type == 'thread':
+                item = Thread.query.get(item_id)
             else:
-                item_ref.update({'downvotes': db.field_increment(1)})
+                item = Reply.query.get(item_id)
+            
+            if item:
+                if vote_type == 'upvote':
+                    item.upvotes += 1
+                else:
+                    item.downvotes += 1
         
+        db.session.commit()
         return jsonify({'success': True})
     except Exception as e:
         logging.error(f"Error handling vote: {e}")
+        db.session.rollback()
         return jsonify({'error': 'Failed to process vote'}), 500
 
 @app.route('/search')
@@ -279,20 +281,19 @@ def search():
     
     try:
         # Simple text search in thread titles and content
-        threads_ref = db.collection('threads')
-        all_threads = threads_ref.stream()
+        threads = Thread.query.filter(
+            (Thread.title.ilike(f'%{query}%')) | 
+            (Thread.content.ilike(f'%{query}%'))
+        ).order_by(Thread.created_at.desc()).all()
         
-        matching_threads = []
-        for doc in all_threads:
-            thread_data = doc.to_dict()
-            if (query.lower() in thread_data.get('title', '').lower() or 
-                query.lower() in thread_data.get('content', '').lower()):
-                thread_data['id'] = doc.id
-                thread_data['category_name'] = CATEGORIES.get(thread_data.get('category', 'general'), 'General')
-                matching_threads.append(thread_data)
+        thread_list = []
+        for thread in threads:
+            thread_data = thread.to_dict()
+            thread_data['category_name'] = CATEGORIES.get(thread.category, 'General')
+            thread_list.append(thread_data)
         
         return render_template('index.html', 
-                             threads=matching_threads, 
+                             threads=thread_list, 
                              categories=CATEGORIES,
                              search_query=query,
                              firebase_api_key=os.environ.get("FIREBASE_API_KEY", ""),
