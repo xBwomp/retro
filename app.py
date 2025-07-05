@@ -58,6 +58,7 @@ def index():
 def login():
     """Login page"""
     return render_template('login.html',
+                         categories=CATEGORIES,
                          firebase_api_key=os.environ.get("FIREBASE_API_KEY", ""),
                          firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID", ""),
                          firebase_app_id=os.environ.get("FIREBASE_APP_ID", ""))
