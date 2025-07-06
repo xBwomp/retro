@@ -4,6 +4,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from database import db, Thread, Reply, Vote
 from datetime import datetime
 
+# Load environment variables from .env file if it exists
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # dotenv not available, skip loading
+    pass
+
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -12,7 +20,26 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 
 # Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+# For development, fall back to PostgreSQL if MySQL is not available
+# For production, set MYSQL_* environment variables
+mysql_host = os.environ.get("MYSQL_HOST")
+mysql_user = os.environ.get("MYSQL_USER")
+mysql_password = os.environ.get("MYSQL_PASSWORD")
+mysql_database = os.environ.get("MYSQL_DATABASE")
+
+if mysql_host and mysql_user and mysql_database:
+    # Production MySQL configuration
+    if mysql_password:
+        mysql_url = f"mysql+pymysql://{mysql_user}:{mysql_password}@{mysql_host}/{mysql_database}"
+    else:
+        mysql_url = f"mysql+pymysql://{mysql_user}@{mysql_host}/{mysql_database}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = mysql_url
+    print("Using MySQL database")
+else:
+    # Development fallback to PostgreSQL
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+    print("Using PostgreSQL database (development)")
+
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,

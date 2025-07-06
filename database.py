@@ -2,6 +2,10 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from datetime import datetime
+import pymysql
+
+# Install PyMySQL as MySQLdb
+pymysql.install_as_MySQLdb()
 
 
 class Base(DeclarativeBase):

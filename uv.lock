@@ -1106,6 +1106,15 @@ crypto = [
 ]
 
 [[package]]
+name = "pymysql"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/ce59b5e5ed4ce8512f879ff1fa5ab699d211ae2495f1adaa5fbba2a1eada/pymysql-1.1.1.tar.gz", hash = "sha256:e127611aaf2b417403c60bf4dc570124aeb4a57f5f37b8e95ae399a42f904cd0", size = 47678 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/94/e4181a1f6286f545507528c78016e00065ea913276888db2262507693ce5/PyMySQL-1.1.1-py3-none-any.whl", hash = "sha256:4de15da4c61dc132f4fb9ab763063e693d521a80fd0e87943b9a453dd4c19d6c", size = 44972 },
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.2.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1175,6 +1184,7 @@ name = "repl-nix-workspace"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "cryptography" },
     { name = "email-validator" },
     { name = "firebase-admin" },
     { name = "flask" },
@@ -1182,11 +1192,14 @@ dependencies = [
     { name = "google-cloud-firestore" },
     { name = "gunicorn" },
     { name = "psycopg2-binary" },
+    { name = "pymysql" },
     { name = "sift-stack-py" },
+    { name = "sqlalchemy" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "cryptography", specifier = ">=45.0.5" },
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "firebase-admin", specifier = ">=6.9.0" },
     { name = "flask", specifier = ">=3.1.1" },
@@ -1194,7 +1207,9 @@ requires-dist = [
     { name = "google-cloud-firestore", specifier = ">=2.21.0" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "pymysql", specifier = ">=1.1.1" },
     { name = "sift-stack-py", specifier = ">=0.7.0" },
+    { name = "sqlalchemy", specifier = ">=2.0.41" },
 ]
 
 [[package]]

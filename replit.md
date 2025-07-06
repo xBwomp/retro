@@ -129,6 +129,7 @@ RetroForum is a Flask-based web application that recreates the nostalgic feel of
 ```
 Changelog:
 - July 04, 2025. Initial setup
+- July 06, 2025. Added MySQL deployment support for personal websites
 ```
 
 ## User Preferences
