@@ -3,21 +3,21 @@
 /* Import retro fonts */
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Press+Start+2P&display=swap');
 
-/* CSS Variables for retro colors */
+/* CSS Variables for Gopher-style interface */
 :root {
-    --retro-bg: #c0c0c0;
-    --retro-dark-bg: #808080;
-    --retro-light-bg: #e0e0e0;
-    --retro-border: #000080;
-    --retro-accent: #ff00ff;
-    --retro-highlight: #ffff00;
-    --retro-text: #000000;
-    --retro-link: #0000ff;
-    --retro-visited: #800080;
-    --retro-button-bg: #c0c0c0;
-    --retro-button-shadow: #808080;
-    --retro-error: #ff0000;
-    --retro-success: #008000;
+    --gopher-bg: #c0c0c0;
+    --gopher-window: #ffffff;
+    --gopher-border: #808080;
+    --gopher-dark-border: #404040;
+    --gopher-text: #000000;
+    --gopher-link: #0000aa;
+    --gopher-folder-bg: #ffff00;
+    --gopher-doc-bg: #ffffff;
+    --gopher-highlight: #000080;
+    --gopher-select: #316ac5;
+    --netscape-gray: #c0c0c0;
+    --window-title-bg: #008080;
+    --window-title-text: #ffffff;
     --retro-warning: #ffa500;
 }
 
@@ -27,27 +27,150 @@
 }
 
 body {
-    font-family: 'Courier Prime', monospace;
-    background: linear-gradient(45deg, var(--retro-bg) 25%, var(--retro-light-bg) 25%, var(--retro-light-bg) 50%, var(--retro-bg) 50%, var(--retro-bg) 75%, var(--retro-light-bg) 75%);
-    background-size: 4px 4px;
-    color: var(--retro-text);
+    font-family: 'MS Sans Serif', Arial, sans-serif;
+    font-size: 11px;
+    background-color: var(--gopher-bg);
+    color: var(--gopher-text);
     margin: 0;
     padding: 0;
     min-height: 100vh;
+    overflow-x: auto;
 }
 
-/* Container */
-.retro-container {
-    background: var(--retro-bg);
-    border: 2px solid var(--retro-border);
+/* Gopher Window Container */
+.gopher-window {
+    background: var(--gopher-bg);
+    border: 2px outset var(--gopher-bg);
     min-height: 100vh;
-    padding: 0;
+    position: relative;
 }
 
-/* Header Styles */
-.retro-header {
-    background: linear-gradient(to bottom, var(--retro-light-bg), var(--retro-bg));
-    border-bottom: 2px solid var(--retro-border);
+/* Window Title Bar */
+.window-title {
+    background: var(--window-title-bg);
+    color: var(--window-title-text);
+    padding: 2px 4px;
+    font-weight: bold;
+    font-size: 11px;
+    border-bottom: 1px solid var(--gopher-dark-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.window-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.window-control {
+    width: 16px;
+    height: 14px;
+    background: var(--gopher-bg);
+    border: 1px outset var(--gopher-bg);
+    font-size: 8px;
+    text-align: center;
+    line-height: 12px;
+    cursor: pointer;
+}
+
+/* Gopher Menu Styles */
+.gopher-menu {
+    background: var(--gopher-window);
+    border: 2px inset var(--gopher-bg);
+    margin: 4px;
+    padding: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.gopher-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-align: center;
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 1px 4px;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--gopher-text);
+    border: 1px solid transparent;
+    margin: 1px 0;
+}
+
+.menu-item:hover {
+    background: var(--gopher-select);
+    color: white;
+}
+
+.menu-item:visited {
+    color: var(--gopher-text);
+}
+
+.menu-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    display: inline-block;
+    text-align: center;
+    font-size: 14px;
+    line-height: 16px;
+}
+
+/* Gopher folder icon */
+.folder-icon {
+    background: var(--gopher-folder-bg);
+    border: 1px solid var(--gopher-dark-border);
+    color: var(--gopher-text);
+}
+
+/* Document icon */
+.doc-icon {
+    background: var(--gopher-doc-bg);
+    border: 1px solid var(--gopher-dark-border);
+    color: var(--gopher-text);
+}
+
+/* Menu text */
+.menu-text {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+/* Content area styles */
+.content-area {
+    margin: 4px;
+    padding: 8px;
+    background: var(--gopher-window);
+    border: 2px inset var(--gopher-bg);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.gopher-content {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+/* Remove all Bootstrap and modern styling */
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Hide modern UI elements */
+.btn, .button, .form-control, .table {
+    display: none !important;
+}
     padding: 10px;
 }
 

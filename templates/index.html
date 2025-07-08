@@ -1,119 +1,58 @@
 {% extends "base.html" %}
 
-{% block title %}RetroForum - Home{% endblock %}
+{% block title %}Netscape: RetroForum - Recent Discussions{% endblock %}
 
 {% block content %}
-<div class="forum-content">
+<script>
+// Show content area when viewing threads
+document.addEventListener('DOMContentLoaded', function() {
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+        contentArea.style.display = 'block';
+    }
+});
+</script>
+
+<div class="gopher-content">
+    <div class="gopher-title">Recent Discussions</div>
+    
     {% if search_query %}
-    <div class="search-results-header">
-        <h2 class="retro-heading">
-            <i class="fas fa-search"></i> Search Results for "{{ search_query }}"
-        </h2>
-        {% if not threads %}
-        <p class="no-results">No threads found matching your search.</p>
-        {% endif %}
+    <div style="margin: 8px 0; font-weight: bold;">
+        Search Results for "{{ search_query }}"
     </div>
+    {% if not threads %}
+    <div style="margin: 8px 0;">No threads found matching your search.</div>
+    {% endif %}
     {% else %}
-    <div class="welcome-section">
-        <h2 class="retro-heading">
-            <i class="fas fa-fire"></i> Latest Discussions
-        </h2>
-        <p class="welcome-text">Join the conversation! Share your thoughts and connect with fellow netizens.</p>
+    <div style="margin: 8px 0; font-size: 12px;">
+        Welcome to RetroForum! Select a discussion below to read and participate.
     </div>
     {% endif %}
 
     {% if threads %}
-    <div class="threads-container">
-        <table class="retro-table threads-table">
-            <thead>
-                <tr class="table-header">
-                    <th width="50%">Thread Title</th>
-                    <th width="15%">Category</th>
-                    <th width="15%">Author</th>
-                    <th width="10%">Replies</th>
-                    <th width="10%">Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for thread in threads %}
-                <tr class="thread-row">
-                    <td class="thread-title-cell">
-                        <div class="thread-info">
-                            <h3 class="thread-title">
-                                <a href="{{ url_for('thread', thread_id=thread.id) }}" class="thread-link">
-                                    {{ thread.title }}
-                                </a>
-                            </h3>
-                            <div class="thread-meta">
-                                <small>
-                                    <i class="fas fa-clock"></i>
-                                    {% if thread.created_at %}
-                                        {{ thread.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                    {% else %}
-                                        Just now
-                                    {% endif %}
-                                </small>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="category-cell">
-                        <a href="{{ url_for('category', category_id=thread.category) }}" class="category-badge">
-                            {{ thread.category_name }}
-                        </a>
-                    </td>
-                    <td class="author-cell">
-                        <div class="author-info">
-                            <i class="fas fa-user"></i>
-                            {{ thread.author_name or 'Anonymous' }}
-                        </div>
-                    </td>
-                    <td class="replies-cell">
-                        <div class="stat-box">
-                            <i class="fas fa-comments"></i>
-                            {{ thread.reply_count or 0 }}
-                        </div>
-                    </td>
-                    <td class="score-cell">
-                        <div class="vote-display">
-                            <div class="vote-score">
-                                <i class="fas fa-arrow-up text-success"></i>
-                                {{ thread.upvotes or 0 }}
-                                <br>
-                                <i class="fas fa-arrow-down text-danger"></i>
-                                {{ thread.downvotes or 0 }}
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <hr style="border: 1px solid var(--gopher-border); margin: 8px 0;">
+    
+    {% for thread in threads %}
+    <a href="{{ url_for('thread', thread_id=thread.id) }}" class="menu-item">
+        <span class="menu-icon doc-icon">📄</span>
+        <span class="menu-text">{{ thread.title }}</span>
+    </a>
+    <div style="margin-left: 26px; font-size: 10px; color: #666; margin-bottom: 2px;">
+        {{ thread.category_name }} | by {{ thread.author_name }} | 
+        {% if thread.reply_count %}{{ thread.reply_count }} replies{% else %}no replies{% endif %} |
+        {% if thread.upvotes %}+{{ thread.upvotes }}{% endif %}{% if thread.downvotes %} -{{ thread.downvotes }}{% endif %} votes |
+        {% if thread.created_at %}{{ thread.created_at.strftime('%m/%d/%y %H:%M') }}{% else %}just now{% endif %}
     </div>
+    {% endfor %}
     {% else %}
-        {% if not search_query %}
-        <div class="empty-state">
-            <div class="empty-message">
-                <i class="fas fa-comments-slash fa-4x"></i>
-                <h3>No threads yet!</h3>
-                <p>Be the first to start a discussion.</p>
-                <a href="{{ url_for('create_thread') }}" class="retro-button large">
-                    <i class="fas fa-plus"></i> Create First Thread
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    {% endif %}
-</div>
-
-<!-- Retro decorations -->
-<div class="retro-decorations">
-    <div class="decoration-line"></div>
-    <div class="blink-text">
-        <marquee behavior="scroll" direction="left" scrollamount="3">
-            Welcome to RetroForum! ★ Share your thoughts ★ Connect with others ★ Relive the '90s web experience! ★
-        </marquee>
+    <hr style="border: 1px solid var(--gopher-border); margin: 8px 0;">
+    {% if not search_query %}
+    <div style="margin: 8px 0; text-align: center;">
+        <div style="font-weight: bold; margin-bottom: 4px;">No discussions found</div>
+        <div style="font-size: 11px;">Be the first to start a conversation!</div>
     </div>
-    <div class="decoration-line"></div>
+    {% endif %}
+    {% endif %}
 </div>
 {% endblock %}
 

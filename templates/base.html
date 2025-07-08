@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}RetroForum - A Nostalgic Discussion Board{% endblock %}</title>
+    <title>{% block title %}Netscape: RetroForum{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Remove Bootstrap and Font Awesome for authentic Gopher look -->
     
     <!-- Custom Retro CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
@@ -17,131 +13,78 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <div class="container-fluid retro-container">
-        <!-- Header -->
-        <header class="retro-header">
-            <div class="row">
-                <div class="col-12">
-                    <table class="header-table">
-                        <tr>
-                            <td class="logo-cell">
-                                <h1 class="retro-logo">
-                                    <i class="fas fa-comments"></i>
-                                    RetroForum
-                                </h1>
-                                <div class="tagline">~ Where Nostalgia Meets Discussion ~</div>
-                            </td>
-                            <td class="nav-cell">
-                                <div class="retro-nav">
-                                    <a href="{{ url_for('index') }}" class="retro-button">
-                                        <i class="fas fa-home"></i> Home
-                                    </a>
-                                    <a href="{{ url_for('create_thread') }}" class="retro-button" id="new-thread-btn">
-                                        <i class="fas fa-plus"></i> New Thread
-                                    </a>
-                                    <div class="auth-section">
-                                        <span id="user-info" style="display: none;">
-                                            Welcome, <span id="user-name"></span>!
-                                            <button id="logout-btn" class="retro-button small">Logout</button>
-                                        </span>
-                                        <a href="{{ url_for('login') }}" id="login-btn" class="retro-button">
-                                            <i class="fas fa-sign-in-alt"></i> Login
-                                        </a>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation Bar -->
-        <nav class="retro-navbar">
-            <div class="row">
-                <div class="col-12">
-                    <div class="category-nav">
-                        <a href="{{ url_for('index') }}" class="category-link {% if request.endpoint == 'index' %}active{% endif %}">
-                            <i class="fas fa-list"></i> All Threads
-                        </a>
-                        {% for cat_id, cat_name in categories.items() %}
-                        <a href="{{ url_for('category', category_id=cat_id) }}" 
-                           class="category-link {% if request.endpoint == 'category' and request.view_args.category_id == cat_id %}active{% endif %}">
-                            {% if cat_id == 'tech' %}<i class="fas fa-microchip"></i>
-                            {% elif cat_id == 'gaming' %}<i class="fas fa-gamepad"></i>
-                            {% elif cat_id == 'music' %}<i class="fas fa-music"></i>
-                            {% elif cat_id == 'movies' %}<i class="fas fa-film"></i>
-                            {% elif cat_id == 'random' %}<i class="fas fa-random"></i>
-                            {% else %}<i class="fas fa-comments"></i>
-                            {% endif %}
-                            {{ cat_name }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Search Bar -->
-        <div class="search-section">
-            <div class="row">
-                <div class="col-12">
-                    <form method="GET" action="{{ url_for('search') }}" class="search-form">
-                        <table class="search-table">
-                            <tr>
-                                <td>
-                                    <input type="text" name="q" placeholder="Search threads..." 
-                                           value="{{ search_query or '' }}" class="retro-input search-input">
-                                </td>
-                                <td>
-                                    <button type="submit" class="retro-button">
-                                        <i class="fas fa-search"></i> Search
-                                    </button>
-                                </td>
-                            </tr>
-                        </table>
-                    </form>
-                </div>
+    <div class="gopher-window">
+        <!-- Window Title Bar -->
+        <div class="window-title">
+            <span>Netscape: RetroForum Gopher Menu</span>
+            <div class="window-controls">
+                <div class="window-control">_</div>
+                <div class="window-control">□</div>
+                <div class="window-control">×</div>
             </div>
         </div>
-
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for category, message in messages %}
-                        <div class="alert retro-alert alert-{{ 'danger' if category == 'error' else 'info' }}">
-                            <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }}"></i>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
+        
+        <!-- Main Gopher Menu Content -->
+        <div class="gopher-menu">
+            <div class="gopher-title">RetroForum Menu</div>
+            
+            <!-- Main Navigation Menu Items -->
+            <a href="{{ url_for('index') }}" class="menu-item">
+                <span class="menu-icon folder-icon">📁</span>
+                <span class="menu-text">About this Service</span>
+            </a>
+            
+            <a href="{{ url_for('login') }}" class="menu-item" id="login-btn">
+                <span class="menu-icon doc-icon">📄</span>
+                <span class="menu-text">User Authentication</span>
+            </a>
+            
+            <span id="user-info" style="display: none;">
+                <div class="menu-item">
+                    <span class="menu-icon">👤</span>
+                    <span class="menu-text">Welcome, <span id="user-name"></span>!</span>
                 </div>
+                <a href="#" id="logout-btn" class="menu-item">
+                    <span class="menu-icon doc-icon">📄</span>
+                    <span class="menu-text">Logout</span>
+                </a>
+            </span>
+            
+            <hr style="border: 1px solid var(--gopher-border); margin: 8px 0;">
+            
+            <!-- Forum Categories as Gopher Menu Items -->
+            <a href="{{ url_for('index') }}" class="menu-item">
+                <span class="menu-icon folder-icon">📁</span>
+                <span class="menu-text">Recent Discussions</span>
+            </a>
+            
+            {% if categories %}
+            {% for cat_id, cat_name in categories.items() %}
+            <a href="{{ url_for('category', category_id=cat_id) }}" class="menu-item">
+                <span class="menu-icon folder-icon">📁</span>
+                <span class="menu-text">{{ cat_name }}</span>
+            </a>
+            {% endfor %}
             {% endif %}
-        {% endwith %}
-
-        <!-- Main Content -->
-        <main class="retro-main">
-            {% block content %}{% endblock %}
-        </main>
-
-        <!-- Footer -->
-        <footer class="retro-footer">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <p>
-                        &copy; 2025 RetroForum | Powered by Flask & Firebase | 
-                        <i class="fas fa-heart" style="color: #ff6b6b;"></i> Made with nostalgia
-                    </p>
-                    <p class="footer-links">
-                        <span class="blink">★</span> Welcome to the past! <span class="blink">★</span>
-                    </p>
-                </div>
+            
+            <hr style="border: 1px solid var(--gopher-border); margin: 8px 0;">
+            
+            <a href="{{ url_for('create_thread') }}" class="menu-item" id="new-thread-btn">
+                <span class="menu-icon doc-icon">📄</span>
+                <span class="menu-text">Create New Thread</span>
+            </a>
+            
+            <a href="{{ url_for('search') }}?q=" class="menu-item">
+                <span class="menu-icon doc-icon">📄</span>
+                <span class="menu-text">Search Forum</span>
+            </a>
+            
+            <!-- Page-specific content area (hidden by default, shown when navigating) -->
+            <div class="content-area" style="display: none;">
+                {% block content %}{% endblock %}
             </div>
-        </footer>
+        </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Firebase SDK -->
     <script type="module">
