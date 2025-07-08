@@ -6,13 +6,13 @@
 /* CSS Variables for Gopher-style interface */
 :root {
     --gopher-bg: #c0c0c0;
-    --gopher-window: #ffffff;
+    --gopher-window: #c0c0c0;
     --gopher-border: #808080;
     --gopher-dark-border: #404040;
     --gopher-text: #000000;
     --gopher-link: #0000aa;
     --gopher-folder-bg: #ffff00;
-    --gopher-doc-bg: #ffffff;
+    --gopher-doc-bg: #c0c0c0;
     --gopher-highlight: #000080;
     --gopher-select: #316ac5;
     --netscape-gray: #c0c0c0;
