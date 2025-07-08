@@ -130,6 +130,7 @@ RetroForum is a Flask-based web application that recreates the nostalgic feel of
 Changelog:
 - July 04, 2025. Initial setup
 - July 06, 2025. Added MySQL deployment support for personal websites
+- July 08, 2025. Implemented nested comment threading with hierarchical reply structure
 ```
 
 ## User Preferences

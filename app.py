@@ -136,20 +136,44 @@ def category(category_id):
 
 @app.route('/thread/<int:thread_id>')
 def thread(thread_id):
-    """Show a specific thread with replies"""
+    """Show a specific thread with nested replies"""
     try:
         # Get thread
         thread = Thread.query.get_or_404(thread_id)
         thread_data = thread.to_dict()
         thread_data['category_name'] = CATEGORIES.get(thread.category, 'General')
         
-        # Get replies
-        replies = Reply.query.filter_by(thread_id=thread_id).order_by(Reply.created_at).all()
-        reply_list = [reply.to_dict() for reply in replies]
+        # Get all replies for this thread
+        all_replies = Reply.query.filter_by(thread_id=thread_id).order_by(Reply.created_at).all()
+        
+        # Build nested reply structure
+        def build_nested_replies():
+            # Create a dictionary to hold all replies by ID
+            reply_dict = {}
+            for reply in all_replies:
+                reply_data = reply.to_dict()
+                reply_data['children'] = []
+                reply_dict[reply.id] = reply_data
+            
+            # Build the tree structure
+            root_replies = []
+            for reply in all_replies:
+                reply_data = reply_dict[reply.id]
+                if reply.parent_id is None:
+                    # This is a top-level reply
+                    root_replies.append(reply_data)
+                else:
+                    # This is a nested reply
+                    if reply.parent_id in reply_dict:
+                        reply_dict[reply.parent_id]['children'].append(reply_data)
+            
+            return root_replies
+        
+        nested_replies = build_nested_replies()
         
         return render_template('thread.html', 
                              thread=thread_data, 
-                             replies=reply_list,
+                             replies=nested_replies,
                              categories=CATEGORIES,
                              firebase_api_key=os.environ.get("FIREBASE_API_KEY", ""),
                              firebase_project_id=os.environ.get("FIREBASE_PROJECT_ID", ""),
@@ -198,7 +222,7 @@ def api_create_thread():
 
 @app.route('/api/create_reply', methods=['POST'])
 def api_create_reply():
-    """API endpoint to create a new reply"""
+    """API endpoint to create a new reply (with support for nested replies)"""
     try:
         data = request.get_json()
         
@@ -206,9 +230,10 @@ def api_create_reply():
         if not all(key in data for key in ['thread_id', 'content', 'author_uid', 'author_name']):
             return jsonify({'error': 'Missing required fields'}), 400
         
-        # Create reply
+        # Create reply (parent_id is optional for nested replies)
         reply = Reply(
             thread_id=int(data['thread_id']),
+            parent_id=int(data['parent_id']) if data.get('parent_id') else None,
             content=data['content'],
             author_uid=data['author_uid'],
             author_name=data['author_name']

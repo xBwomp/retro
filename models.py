@@ -41,15 +41,19 @@ class Thread(db.Model):
 
 
 class Reply(db.Model):
-    """Forum reply model"""
+    """Forum reply model with nested threading support"""
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(db.Integer, db.ForeignKey('thread.id'), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('reply.id'), nullable=True)  # For nested replies
     content = db.Column(db.Text, nullable=False)
     author_uid = db.Column(db.String(100), nullable=False)
     author_name = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     upvotes = db.Column(db.Integer, default=0)
     downvotes = db.Column(db.Integer, default=0)
+    
+    # Self-referential relationship for nested replies
+    children = db.relationship('Reply', backref=db.backref('parent', remote_side=[id]), lazy='dynamic')
     
     # Relationship to votes
     votes = db.relationship('Vote', backref='reply', lazy=True, cascade='all, delete-orphan',
@@ -58,10 +62,21 @@ class Reply(db.Model):
     def __repr__(self):
         return f'<Reply {self.id}>'
 
+    def get_nested_replies(self):
+        """Get all nested replies in a hierarchical structure"""
+        def build_tree(reply):
+            children = reply.children.order_by(Reply.created_at.asc()).all()
+            return {
+                'reply': reply,
+                'children': [build_tree(child) for child in children]
+            }
+        return build_tree(self)
+
     def to_dict(self):
         return {
             'id': str(self.id),
             'thread_id': str(self.thread_id),
+            'parent_id': str(self.parent_id) if self.parent_id else None,
             'content': self.content,
             'author_uid': self.author_uid,
             'author_name': self.author_name,

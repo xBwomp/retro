@@ -863,3 +863,100 @@ marquee {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--retro-button-shadow);
 }
+
+/* Nested Reply Styles for Gopher Interface */
+.gopher-reply-item {
+    display: flex;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    margin: 2px 0;
+    border-bottom: 1px solid var(--gopher-border);
+    padding: 4px 0;
+}
+
+.reply-icon {
+    width: 16px;
+    color: var(--gopher-border);
+    font-weight: bold;
+    font-family: monospace;
+}
+
+.reply-content-wrapper {
+    flex: 1;
+    padding-left: 4px;
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.reply-author {
+    font-weight: bold;
+    color: var(--gopher-text);
+}
+
+.reply-meta {
+    color: var(--gopher-border);
+    font-size: 10px;
+}
+
+.vote-section-inline {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.vote-btn-inline, .reply-btn-inline {
+    background: var(--gopher-bg);
+    border: 1px outset var(--gopher-bg);
+    color: var(--gopher-text);
+    padding: 1px 4px;
+    cursor: pointer;
+    font-size: 10px;
+    font-family: monospace;
+}
+
+.vote-btn-inline:hover, .reply-btn-inline:hover {
+    background: var(--gopher-select);
+    color: white;
+}
+
+.nested-reply-form {
+    margin-top: 8px;
+    padding: 8px;
+    background: var(--gopher-window);
+    border: 1px inset var(--gopher-bg);
+}
+
+.nested-reply-textarea {
+    width: 100%;
+    background: var(--gopher-window);
+    border: 1px inset var(--gopher-bg);
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 4px;
+    resize: vertical;
+}
+
+.nested-reply-actions {
+    margin-top: 4px;
+    display: flex;
+    gap: 4px;
+}
+
+.nested-reply-submit {
+    background: var(--gopher-bg);
+    border: 1px outset var(--gopher-bg);
+    padding: 2px 8px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.nested-reply-submit:hover {
+    background: var(--gopher-select);
+    color: white;
+}

@@ -118,69 +118,81 @@
         <div class="replies-header">
             <h3 class="retro-heading">
                 <i class="fas fa-comments"></i> 
-                Replies ({{ replies | length }})
+                Replies
             </h3>
         </div>
 
         {% if replies %}
             <div class="replies-container">
-                {% for reply in replies %}
-                <div class="reply-post" id="reply-{{ reply.id }}">
-                    <table class="retro-table reply-table">
-                        <tr>
-                            <td class="author-column">
-                                <div class="author-info">
-                                    <div class="author-avatar">
-                                        <i class="fas fa-user-circle fa-2x"></i>
+                {% macro render_reply(reply, depth) %}
+                <div class="reply-post nested-reply-{{ depth }}" id="reply-{{ reply.id }}" style="margin-left: {{ depth * 20 }}px;">
+                    <div class="gopher-reply-item">
+                        <div class="reply-icon">{% if depth > 0 %}└{% else %}│{% endif %}</div>
+                        <div class="reply-content-wrapper">
+                            <div class="reply-header">
+                                <span class="reply-author">{{ reply.author_name or 'Anonymous' }}</span>
+                                <span class="reply-meta">
+                                    {% if reply.created_at %}
+                                        - {{ reply.created_at.strftime('%m/%d/%y %H:%M') }}
+                                    {% else %}
+                                        - just now
+                                    {% endif %}
+                                </span>
+                                <div class="vote-section-inline">
+                                    <button class="vote-btn-inline upvote-btn" 
+                                            data-item-id="{{ reply.id }}" 
+                                            data-item-type="reply" 
+                                            data-vote-type="upvote">
+                                        ↑<span class="vote-count">{{ reply.upvotes or 0 }}</span>
+                                    </button>
+                                    <button class="vote-btn-inline downvote-btn" 
+                                            data-item-id="{{ reply.id }}" 
+                                            data-item-type="reply" 
+                                            data-vote-type="downvote">
+                                        ↓<span class="vote-count">{{ reply.downvotes or 0 }}</span>
+                                    </button>
+                                    <button class="reply-btn-inline" 
+                                            data-reply-to="{{ reply.id }}"
+                                            onclick="showNestedReplyForm({{ reply.id }})">
+                                        Reply
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="reply-content">
+                                {{ reply.content | replace('\n', '<br>') | safe }}
+                            </div>
+                            
+                            <!-- Nested reply form (hidden by default) -->
+                            <div id="nested-reply-form-{{ reply.id }}" class="nested-reply-form" style="display: none;">
+                                <form class="nested-reply-form-inner" data-parent-id="{{ reply.id }}">
+                                    <textarea class="nested-reply-textarea" placeholder="Reply to {{ reply.author_name }}..." rows="3"></textarea>
+                                    <div class="nested-reply-actions">
+                                        <button type="submit" class="nested-reply-submit">Post</button>
+                                        <button type="button" onclick="hideNestedReplyForm({{ reply.id }})">Cancel</button>
                                     </div>
-                                    <div class="author-name">{{ reply.author_name or 'Anonymous' }}</div>
-                                    <div class="author-title">Member</div>
-                                </div>
-                            </td>
-                            <td class="content-column">
-                                <div class="reply-header">
-                                    <div class="reply-meta">
-                                        <i class="fas fa-clock"></i>
-                                        {% if reply.created_at %}
-                                            {{ reply.created_at.strftime('%B %d, %Y at %I:%M %p') }}
-                                        {% else %}
-                                            Just now
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="reply-content">
-                                    {{ reply.content | replace('\n', '<br>') | safe }}
-                                </div>
-                                <div class="reply-actions">
-                                    <div class="vote-section">
-                                        <button class="vote-btn upvote-btn small" 
-                                                data-item-id="{{ reply.id }}" 
-                                                data-item-type="reply" 
-                                                data-vote-type="upvote">
-                                            <i class="fas fa-arrow-up"></i>
-                                            <span class="vote-count">{{ reply.upvotes or 0 }}</span>
-                                        </button>
-                                        <button class="vote-btn downvote-btn small" 
-                                                data-item-id="{{ reply.id }}" 
-                                                data-item-type="reply" 
-                                                data-vote-type="downvote">
-                                            <i class="fas fa-arrow-down"></i>
-                                            <span class="vote-count">{{ reply.downvotes or 0 }}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Render nested children -->
+                    {% if reply.children %}
+                        {% for child in reply.children %}
+                            {{ render_reply(child, depth + 1) }}
+                        {% endfor %}
+                    {% endif %}
                 </div>
+                {% endmacro %}
+                
+                {% for reply in replies %}
+                    {{ render_reply(reply, 0) }}
                 {% endfor %}
             </div>
         {% else %}
             <div class="no-replies">
                 <div class="empty-message">
-                    <i class="fas fa-comment-slash fa-3x"></i>
-                    <h4>No replies yet!</h4>
-                    <p>Be the first to share your thoughts on this thread.</p>
+                    <div style="font-weight: bold; margin-bottom: 4px;">No replies yet</div>
+                    <div style="font-size: 11px;">Be the first to share your thoughts on this thread.</div>
                 </div>
             </div>
         {% endif %}
@@ -239,7 +251,8 @@ document.addEventListener('DOMContentLoaded', function() {
             thread_id: '{{ thread.id }}',
             content: content,
             author_uid: window.currentUser.uid,
-            author_name: window.currentUser.displayName || 'Anonymous'
+            author_name: window.currentUser.displayName || 'Anonymous',
+            parent_id: null  // Top-level reply
         };
         
         fetch('/api/create_reply', {
@@ -262,6 +275,73 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Error posting reply. Please try again.');
         });
+    });
+    
+    // Handle nested reply forms
+    window.showNestedReplyForm = function(replyId) {
+        if (!window.currentUser) {
+            alert('Please log in to reply.');
+            window.location.href = '/login';
+            return;
+        }
+        document.getElementById('nested-reply-form-' + replyId).style.display = 'block';
+    };
+    
+    window.hideNestedReplyForm = function(replyId) {
+        document.getElementById('nested-reply-form-' + replyId).style.display = 'none';
+        document.querySelector('#nested-reply-form-' + replyId + ' textarea').value = '';
+    };
+    
+    // Handle nested reply submissions
+    document.addEventListener('submit', function(e) {
+        if (e.target.classList.contains('nested-reply-form-inner')) {
+            e.preventDefault();
+            
+            if (!window.currentUser) {
+                alert('Please log in to reply.');
+                window.location.href = '/login';
+                return;
+            }
+            
+            const form = e.target;
+            const parentId = form.getAttribute('data-parent-id');
+            const textarea = form.querySelector('.nested-reply-textarea');
+            const content = textarea.value.trim();
+            
+            if (!content) {
+                alert('Please enter a reply.');
+                return;
+            }
+            
+            const replyData = {
+                thread_id: '{{ thread.id }}',
+                parent_id: parseInt(parentId),
+                content: content,
+                author_uid: window.currentUser.uid,
+                author_name: window.currentUser.displayName || 'Anonymous'
+            };
+            
+            fetch('/api/create_reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(replyData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload page to show new reply
+                    window.location.reload();
+                } else {
+                    alert('Error posting reply: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error posting reply. Please try again.');
+            });
+        }
     });
 });
 </script>
